@@ -1,6 +1,6 @@
 # 使用说明
 
-***此工程实现的以来，必须结合SpringBoot使用***
+***此工程实现的依赖，必须结合SpringBoot使用***
 
 ## 1 集成本工程实现的SpringBoot Starter
 

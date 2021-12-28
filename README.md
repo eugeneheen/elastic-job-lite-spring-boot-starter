@@ -229,3 +229,75 @@
       shardingTotalCount: 10
       overwrite: true
   ```
+## 3 定义作业监听器
+
+### 3.1 监听器说明
+- 作业监听器，用于在任务执行前和执行后执行监听的方法。
+- 监听器分为每台作业节点均执行的常规监听器和分布式场景中仅单一节点执行的分布式监听器。
+- 应尽量使用常规监听器
+
+### 3.2 开发监听器
+
+- Step 1: 创建监听器，可通过实现`ElasticJobListener`实现`常规监听器`。也可通过继承`AbstractDistributeOnceElasticJobListener`实现`分布式监听器`
+  - 常规监听器
+    ```java
+    public class MyJobListener implements ElasticJobListener {
+    
+      @Override
+      public void beforeJobExecuted(ShardingContexts shardingContexts) {
+        // do something ...
+      }
+    
+      @Override
+      public void afterJobExecuted(ShardingContexts shardingContexts) {
+        // do something ...
+      }
+    
+      @Override
+      public String getType() {
+        return "simpleJobListener";
+      }
+    }
+    ```
+  - 分布式监听器
+    ```java
+    public class MyDistributeOnceJobListener extends AbstractDistributeOnceElasticJobListener {
+    
+      private static final long startTimeoutMills = 3000;
+      private static final long completeTimeoutMills = 3000;
+
+      public MyDistributeOnceJobListener() {
+        super(startTimeoutMills, completeTimeoutMills);
+      }
+    
+    
+      @Override
+      public void doBeforeJobExecutedAtLastStarted(ShardingContexts shardingContexts) {
+        // do something ...
+      }
+    
+        @Override
+        public void doAfterJobExecutedAtLastCompleted(ShardingContexts shardingContexts) {
+        // do something ...
+        }
+    
+      @Override
+      public String getType() {
+        return "distributeOnceJobListener";
+      }
+    }
+    ```
+- Step 2: 添加`SPI`实现，在工程下`resources/META-INF/services/`目录下，创建文件名为`org.apache.shardingsphere.elasticjob.infra.listener.ElasticJobListener`的文件，并将`监听器实现类`的`全包类名`添加到该文件，多个时换行
+  ```text
+  com.yongyou.es.hs.job.listener.MyJobListener
+  com.yongyou.es.hs.job.listener.MyDistributeOnceJobListener
+  ```
+- Step 3: 定义作业类时，通过`@ElasticJob`注解的`listener`属性定义需要指定的`监听器`。该值匹配`监听器实现类`中的`getType`方法返回的值。
+  ```java
+  @ElasticJob(
+      jobName = "TestJob",
+      cron = "0/5 * * * * ?",
+      description = "自定义Task",
+      listener = "simpleJobListener"
+  )
+  ```

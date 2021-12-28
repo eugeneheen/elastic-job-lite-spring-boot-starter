@@ -80,4 +80,10 @@ public @interface ElasticTask {
      * @return 实际设置的值
      */
     boolean misfire() default true;
+
+    /**
+     * 配置监听器，默认为""
+     * @return 匹配监听器实现类，getType方法的返回值
+     */
+    String listener() default "";
 }

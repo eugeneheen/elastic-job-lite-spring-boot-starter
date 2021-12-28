@@ -1,16 +1,22 @@
 package com.github.eugeneheen.elastic.job.extend;
 
 import com.github.eugeneheen.elastic.job.annotation.ElasticTask;
+import lombok.extern.java.Log;
 import org.apache.shardingsphere.elasticjob.api.ElasticJob;
 import org.apache.shardingsphere.elasticjob.api.JobConfiguration;
 import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.ScheduleJobBootstrap;
 import org.apache.shardingsphere.elasticjob.reg.zookeeper.ZookeeperRegistryCenter;
+import org.apache.shardingsphere.elasticjob.tracing.api.TracingConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.util.StringUtils;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 完成ElasticJob的初始化
@@ -18,17 +24,23 @@ import java.util.List;
  * @author ChenZhiHeng
  * @date 2021-12-22
  */
+@Log
 public class ElasticJobBeanPostProcessor implements BeanPostProcessor, DisposableBean {
-
     /**
      * Zookeeper注册器
      */
     private ZookeeperRegistryCenter zookeeperRegistryCenter;
 
+    private Map<String, String> listeners;
+
     private List<ScheduleJobBootstrap> schedules = new ArrayList<>();
 
-    public ElasticJobBeanPostProcessor(ZookeeperRegistryCenter zookeeperRegistryCenter) {
+    private DataSource dataSource;
+
+    public ElasticJobBeanPostProcessor(ZookeeperRegistryCenter zookeeperRegistryCenter, Map<String, String> listeners, DataSource dataSource) {
         this.zookeeperRegistryCenter = zookeeperRegistryCenter;
+        this.listeners = listeners;
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -61,9 +73,10 @@ public class ElasticJobBeanPostProcessor implements BeanPostProcessor, Disposabl
         boolean failover = annotation.failover();
         boolean overwrite = annotation.overwrite();
         boolean misfire = annotation.misfire();
+        String listener = annotation.listener();
 
         // 根据自定义注解配置ElasticJob任务的配置
-        JobConfiguration jobConfiguration = JobConfiguration.newBuilder(jobName, shardingTotalCount)
+        JobConfiguration.Builder builder = JobConfiguration.newBuilder(jobName, shardingTotalCount)
                 .cron(cron)
                 .jobParameter(jobParamter)
                 .overwrite(overwrite)
@@ -72,8 +85,19 @@ public class ElasticJobBeanPostProcessor implements BeanPostProcessor, Disposabl
                 .description(description)
                 .shardingItemParameters(shardingItemParameters)
                 .jobShardingStrategyType(jobShardingStrategyClass)
-                .disabled(disabled)
-                .build();
+                .disabled(disabled);
+
+        if (StringUtils.hasLength(listener)) {
+            log.info(String.format("[%s - 增加Listener: %s]", jobName, listener));
+            builder.jobListenerTypes(listener);
+        }
+        JobConfiguration jobConfiguration = builder.build();
+        if (!Objects.isNull(this.dataSource)) {
+            log.info(String.format("[%s - 增加数据追踪]", jobName));
+            // 定义日志数据库事件溯源配置
+            TracingConfiguration tracingConfig = new TracingConfiguration<>("RDB", dataSource);
+            jobConfiguration.getExtraConfigurations().add(tracingConfig);
+        }
 
         // 创建任务调度对象
         ScheduleJobBootstrap scheduleJobBootstrap = new ScheduleJobBootstrap(this.zookeeperRegistryCenter, job, jobConfiguration);

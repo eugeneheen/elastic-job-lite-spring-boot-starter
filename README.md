@@ -22,10 +22,9 @@
 - 配置`Zookeeper`:
   ```yml
   elastic:
-    job:
-      zk:
-        namespace: elastic-job
-        serverList: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+    regCenter:
+      namespace: elastic-job
+      serverList: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
   ```
 ### 1.2 定义作业类
 - 实现`SimpleJob`接口，覆盖`execute(ShardingContext context)`方法。使用`@ElasticJob`注解标注

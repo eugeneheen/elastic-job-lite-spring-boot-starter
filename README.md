@@ -300,3 +300,19 @@
       listener = "simpleJobListener"
   )
   ```
+# 关于启动异常
+
+- 启动时，可能发生异常，如果看到下列异常，是由于`Zookeeper`连接超时造成。通过在`.yml`或`properties`配置文件，增大`elasticjob.regCenter.baseSleepTimeMilliseconds`(默认值1000ms)和`elasticjob.regCenter.maxSleepTimeMilliseconds`(默认值3000ms)的值设置
+  - Invocation of init method failed;
+  - nested exception is org.apache.shardingsphere.elasticjob.reg.exception.RegException:
+  - org.apache.zookeeper.KeeperException$OperationTimeoutException:
+  - KeeperErrorCode = OperationTimeout
+- 配置示例
+  ```yaml
+  elasticjob:
+    regCenter:
+        namespace: elastic-job
+        serverList: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+        baseSleepTimeMilliseconds: 3000
+        maxSleepTimeMilliseconds: 5000
+  ```  

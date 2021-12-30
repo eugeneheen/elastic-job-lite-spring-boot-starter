@@ -26,9 +26,9 @@ import java.util.Map;
 @ConditionalOnProperty(prefix = "elasticjob.regCenter", name = {"namespace", "serverLists"})
 @ConfigurationProperties(prefix = "elasticjob")
 public class ElasticJobConf {
-    @Value("${elasticjob.regCenter.namespace:#{null}")
+    @Value("${elasticjob.regCenter.namespace:localhost:2181}")
     private String namespace;
-    @Value("${elasticjob.regCenter.serverLists:#{null}}")
+    @Value("${elasticjob.regCenter.serverLists:elastic-job}")
     private String serverLists;
     @Value("${elasticjob.regCenter.baseSleepTimeMilliseconds:1000}")
     private int baseSleepTimeMilliseconds;

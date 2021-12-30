@@ -26,10 +26,21 @@ import java.util.Map;
 @ConditionalOnProperty(prefix = "elasticjob.regCenter", name = {"namespace", "serverLists"})
 @ConfigurationProperties(prefix = "elasticjob")
 public class ElasticJobConf {
-    @Value("${elasticjob.regCenter.namespace}")
+    @Value("${elasticjob.regCenter.namespace:#{null}")
     private String namespace;
-    @Value("${elasticjob.regCenter.serverLists}")
+    @Value("${elasticjob.regCenter.serverLists:#{null}}")
     private String serverLists;
+    @Value("${elasticjob.regCenter.baseSleepTimeMilliseconds:1000}")
+    private int baseSleepTimeMilliseconds;
+    @Value("${elasticjob.regCenter.maxSleepTimeMilliseconds:3000}")
+    private int maxSleepTimeMilliseconds;
+    @Value("${elasticjob.regCenter.maxRetries:3}")
+    private int maxRetries;
+    @Value("${elasticjob.regCenter.sessionTimeoutMilliseconds:0}")
+    private int sessionTimeoutMilliseconds;
+    @Value("${elasticjob.regCenter.connectionTimeoutMilliseconds:0}")
+    private int connectionTimeoutMilliseconds;
+
     private Map<String, String> listeners;
     @Autowired
     private DataSource dataSource;
@@ -41,7 +52,13 @@ public class ElasticJobConf {
     @Order(1)
     @Bean
     public ZookeeperConfiguration zookeeperConfiguration() {
-        return new ZookeeperConfiguration(this.serverLists, this.namespace);
+        ZookeeperConfiguration zookeeperConfiguration = new ZookeeperConfiguration(this.serverLists, this.namespace);
+        zookeeperConfiguration.setBaseSleepTimeMilliseconds(this.baseSleepTimeMilliseconds);
+        zookeeperConfiguration.setMaxSleepTimeMilliseconds(this.maxSleepTimeMilliseconds);
+        zookeeperConfiguration.setMaxRetries(this.maxRetries);
+        zookeeperConfiguration.setSessionTimeoutMilliseconds(this.sessionTimeoutMilliseconds);
+        zookeeperConfiguration.setConnectionTimeoutMilliseconds(this.connectionTimeoutMilliseconds);
+        return zookeeperConfiguration;
     }
 
     /**

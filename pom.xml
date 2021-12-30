@@ -99,7 +99,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring.boot.version}</version>
 				<configuration>
-					<mainClass>com.github.eugeneheen.elastic.job.ElasticJobSpringBootStarterApplication</mainClass>
 					<!-- 值设置false会导致该starter中的类无法导入 -->
 					<skip>true</skip>
 					<layers>

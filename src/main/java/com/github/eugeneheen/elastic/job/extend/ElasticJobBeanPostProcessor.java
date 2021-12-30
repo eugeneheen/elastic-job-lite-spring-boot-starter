@@ -15,7 +15,6 @@ import org.springframework.util.StringUtils;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -31,15 +30,12 @@ public class ElasticJobBeanPostProcessor implements BeanPostProcessor, Disposabl
      */
     private ZookeeperRegistryCenter zookeeperRegistryCenter;
 
-    private Map<String, String> listeners;
-
     private List<ScheduleJobBootstrap> schedules = new ArrayList<>();
 
     private DataSource dataSource;
 
-    public ElasticJobBeanPostProcessor(ZookeeperRegistryCenter zookeeperRegistryCenter, Map<String, String> listeners, DataSource dataSource) {
+    public ElasticJobBeanPostProcessor(ZookeeperRegistryCenter zookeeperRegistryCenter, DataSource dataSource) {
         this.zookeeperRegistryCenter = zookeeperRegistryCenter;
-        this.listeners = listeners;
         this.dataSource = dataSource;
     }
 

@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 import javax.sql.DataSource;
-import java.util.Map;
 
 /**
  * ElasticJob配置类
@@ -41,7 +40,6 @@ public class ElasticJobConf {
     @Value("${elasticjob.regCenter.connectionTimeoutMilliseconds:0}")
     private int connectionTimeoutMilliseconds;
 
-    private Map<String, String> listeners;
     @Autowired
     private DataSource dataSource;
 
@@ -79,6 +77,6 @@ public class ElasticJobConf {
     @Order(3)
     @Bean
     public ElasticJobBeanPostProcessor elasticJobBeanPostProcessor(ZookeeperRegistryCenter center) {
-        return new ElasticJobBeanPostProcessor(center, this.listeners, this.dataSource);
+        return new ElasticJobBeanPostProcessor(center, this.dataSource);
     }
 }
